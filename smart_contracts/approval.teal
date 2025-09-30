@@ -1,0 +1,388 @@
+#pragma version 8
+txn ApplicationID
+int 0
+==
+bnz main_l28
+txn OnCompletion
+int OptIn
+==
+bnz main_l27
+txn OnCompletion
+int CloseOut
+==
+bnz main_l26
+txn OnCompletion
+int UpdateApplication
+==
+bnz main_l25
+txn OnCompletion
+int DeleteApplication
+==
+bnz main_l24
+txn OnCompletion
+int NoOp
+==
+txna ApplicationArgs 0
+byte "create_token"
+==
+&&
+bnz main_l23
+txn OnCompletion
+int NoOp
+==
+txna ApplicationArgs 0
+byte "mesh_relay"
+==
+&&
+bnz main_l19
+txn OnCompletion
+int NoOp
+==
+txna ApplicationArgs 0
+byte "withdraw_fees"
+==
+&&
+bnz main_l18
+txn OnCompletion
+int NoOp
+==
+txna ApplicationArgs 0
+byte "update_status"
+==
+&&
+bnz main_l12
+txn OnCompletion
+int NoOp
+==
+txna ApplicationArgs 0
+byte "update_fee"
+==
+&&
+bnz main_l11
+err
+main_l11:
+callsub iscreator_0
+assert
+txn NumAppArgs
+int 2
+>=
+assert
+txna ApplicationArgs 1
+btoi
+int 10000
+<=
+assert
+txna ApplicationArgs 1
+btoi
+int 100
+>=
+assert
+byte "mesh_fee"
+txna ApplicationArgs 1
+btoi
+app_global_put
+byte "Mesh fee updated to: "
+txna ApplicationArgs 1
+concat
+log
+int 1
+return
+main_l12:
+txn NumAppArgs
+int 2
+>=
+assert
+txna ApplicationArgs 1
+btoi
+int 1
+==
+bnz main_l16
+txn Sender
+byte "is_active_relay"
+app_local_get
+int 1
+==
+bnz main_l15
+main_l14:
+int 1
+return
+main_l15:
+txn Sender
+byte "is_active_relay"
+int 0
+app_local_put
+byte "relay_count"
+byte "relay_count"
+app_global_get
+int 1
+-
+app_global_put
+b main_l14
+main_l16:
+txn Sender
+byte "is_active_relay"
+app_local_get
+int 0
+==
+bz main_l14
+txn Sender
+byte "is_active_relay"
+int 1
+app_local_put
+byte "relay_count"
+byte "relay_count"
+app_global_get
+int 1
++
+app_global_put
+b main_l14
+main_l18:
+txn Sender
+byte "relay_balance"
+app_local_get
+int 0
+>
+assert
+txn Sender
+byte "is_active_relay"
+app_local_get
+int 1
+==
+assert
+txn Sender
+byte "relay_balance"
+int 0
+app_local_put
+itxn_begin
+int pay
+itxn_field TypeEnum
+txn Sender
+itxn_field Receiver
+txn Sender
+byte "relay_balance"
+app_local_get
+itxn_field Amount
+int 0
+itxn_field Fee
+itxn_submit
+byte "Fees withdrawn: "
+txn Sender
+byte "relay_balance"
+app_local_get
+itob
+concat
+byte " to: "
+concat
+txn Sender
+concat
+log
+int 1
+return
+main_l19:
+callsub validatemeshtransaction_2
+assert
+callsub isvalidrelay_1
+assert
+txn NumAppArgs
+int 3
+>=
+assert
+txna ApplicationArgs 2
+btoi
+int 10
+<=
+assert
+txn Sender
+byte "relay_count_local"
+txn Sender
+byte "relay_count_local"
+app_local_get
+int 1
++
+app_local_put
+txn Sender
+byte "last_activity"
+global LatestTimestamp
+app_local_put
+txn Sender
+byte "relay_balance"
+txn Sender
+byte "relay_balance"
+app_local_get
+byte "mesh_fee"
+app_global_get
++
+app_local_put
+txn Sender
+byte "reputation_score"
+txn Sender
+byte "reputation_score"
+app_local_get
+int 100
+<
+bnz main_l22
+int 100
+main_l21:
+app_local_put
+byte "Mesh relay processed by: "
+txn Sender
+concat
+byte " Fee: "
+concat
+byte "mesh_fee"
+app_global_get
+itob
+concat
+log
+int 1
+return
+main_l22:
+txn Sender
+byte "reputation_score"
+app_local_get
+int 1
++
+b main_l21
+main_l23:
+callsub iscreator_0
+assert
+byte "token_asset_id"
+app_global_get
+int 0
+==
+assert
+itxn_begin
+int acfg
+itxn_field TypeEnum
+int 1000000000000
+itxn_field ConfigAssetTotal
+int 6
+itxn_field ConfigAssetDecimals
+byte "OFFNET"
+itxn_field ConfigAssetUnitName
+byte "Offnet Token"
+itxn_field ConfigAssetName
+byte "https://offnet.app"
+itxn_field ConfigAssetURL
+global CurrentApplicationAddress
+itxn_field ConfigAssetManager
+global CurrentApplicationAddress
+itxn_field ConfigAssetReserve
+global CurrentApplicationAddress
+itxn_field ConfigAssetFreeze
+global CurrentApplicationAddress
+itxn_field ConfigAssetClawback
+itxn_submit
+byte "token_asset_id"
+itxn CreatedAssetID
+app_global_put
+byte "Token created with ID: "
+itxn CreatedAssetID
+itob
+concat
+log
+int 1
+return
+main_l24:
+callsub iscreator_0
+return
+main_l25:
+callsub iscreator_0
+return
+main_l26:
+int 1
+return
+main_l27:
+txn Sender
+byte "relay_balance"
+int 0
+app_local_put
+txn Sender
+byte "relay_count_local"
+int 0
+app_local_put
+txn Sender
+byte "is_active_relay"
+int 1
+app_local_put
+txn Sender
+byte "reputation_score"
+int 50
+app_local_put
+txn Sender
+byte "last_activity"
+global LatestTimestamp
+app_local_put
+byte "relay_count"
+byte "relay_count"
+app_global_get
+int 1
++
+app_global_put
+byte "Relay node opted in: "
+txn Sender
+concat
+log
+int 1
+return
+main_l28:
+byte "total_supply"
+int 1000000
+app_global_put
+byte "creator"
+global CreatorAddress
+app_global_put
+byte "mesh_fee"
+int 1000
+app_global_put
+byte "relay_count"
+int 0
+app_global_put
+byte "token_asset_id"
+int 0
+app_global_put
+byte "Contract created successfully"
+log
+int 1
+return
+
+// is_creator
+iscreator_0:
+proto 0 1
+byte "creator"
+app_global_get
+txn Sender
+==
+retsub
+
+// is_valid_relay
+isvalidrelay_1:
+proto 0 1
+txn Sender
+byte "is_active_relay"
+app_local_get
+int 1
+==
+txn Sender
+byte "reputation_score"
+app_local_get
+int 10
+>=
+&&
+retsub
+
+// validate_mesh_transaction
+validatemeshtransaction_2:
+proto 0 1
+txn TypeEnum
+int appl
+==
+txn NumAppArgs
+int 1
+>=
+&&
+global GroupSize
+int 1
+>=
+&&
+retsub
