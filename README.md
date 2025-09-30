@@ -1,252 +1,160 @@
-# Offnet
+# Offnet - Algorand Mesh Network
 
-Offnet is an open-source offline Web3 payment system that enables peer-to-peer digital transactions through Bluetooth mesh networking without requiring internet connectivity.
+Offline Web3 payment system enabling peer-to-peer transactions through Bluetooth mesh networking without internet connectivity.
 
-## Overview
+## Features
 
-Offnet creates a decentralized payment network where transactions propagate across devices using Bluetooth Low Energy (BLE) mesh networking. The system maintains transaction integrity through local ledgers and cryptographic validation, preventing double-spending while operating completely offline.
-
-## Core Features
-
-### Offline Transaction Processing
-- Bluetooth mesh network for transaction propagation
-- Local ledger maintenance on each device
-- Cryptographic transaction validation
-- Double-spending prevention without centralized authority
-
-### Decentralized Identity
-- Self-sovereign identity management
-- Cryptographic key pairs for secure authentication
-- Identity verification through mesh network consensus
-- Privacy-preserving transaction signatures
-
-### Smart Vouchers
-- Conditional payment contracts
-- Time-locked transactions
-- Multi-signature requirements
-- Programmable spending conditions
-
-### Incentive System
-- Node rewards for transaction relaying
-- Mesh network participation incentives
-- Automatic fee distribution
-- Network health metrics and rewards
-
-## Technical Architecture
-
-### Network Layer
-- Bluetooth Low Energy (BLE) for device communication
-- Custom mesh protocol for message routing
-- Packet fragmentation for large transaction data
-- Automatic network topology discovery
-
-### Transaction Layer
-- Algorand-based transaction format
-- Local transaction pool management
-- Conflict resolution algorithms
-- Batch transaction processing
-
-### Consensus Layer
-- Proof-of-relay consensus mechanism
-- Local ledger synchronization
-- Fork resolution protocols
-- Network partition handling
-
-### Application Layer
+- Offline Algorand transactions via Bluetooth mesh
+- Smart contract-based relay fee system
 - React Native mobile application
-- Pera Wallet integration
-- Transaction history management
-- Network status monitoring
+- Modern AlgoKit development environment
 
-## Getting Started
+## Installation
 
 ### Prerequisites
-- Node.js 18+
-- React Native development environment
-- Android Studio (for Android builds)
-- Python 3.8+ (for smart contract deployment)
 
-### Installation
+- Node.js 16+
+- Python 3.11+
+- AlgoKit CLI
+- Docker (for LocalNet)
 
-1. Clone the repository:
+### Setup
+
 ```bash
-git clone https://github.com/somewherelostt/offnet.git
-cd offnet
-```
-
-2. Install dependencies:
-```bash
+# Install dependencies
 npm install
+pip install -r smart_contracts/requirements.txt
+
+# Install AlgoKit
+pip install algokit
+
+# Start Algorand LocalNet
+algokit localnet start
 ```
 
-3. Configure environment:
+## Smart Contract
+
+### Compilation
+
 ```bash
-cp .env.example .env
-# Edit .env with your configuration
+cd smart_contracts
+python test_compilation.py
 ```
 
-4. Start the development server:
+### Deployment
+
 ```bash
-npm start
-```
+# Deploy to LocalNet
+python localnet_test.py
 
-### Smart Contract Deployment
-
-1. Install Python dependencies:
-```bash
-cd contracts
-pip install -r requirements.txt
-```
-
-2. Deploy to Algorand TestNet:
-```bash
-export ALGORAND_PRIVATE_KEY="your-private-key"
-python deploy.py
-```
-
-## Project Structure
-
-```
-offnet/
-├── app/                    # React Native application screens
-├── components/             # Reusable UI components
-├── contexts/              # React context providers
-├── utils/                 # Utility functions and helpers
-├── constants/             # Configuration and constants
-├── contracts/             # Algorand smart contracts
-└── assets/               # Static assets and images
+# Deploy to TestNet
+python deploy_modern.py
 ```
 
 ## Development
 
-### Running Tests
+### Run Mobile App
+
+```bash
+npm start
+```
+
+### Test Contract
+
+```bash
+cd smart_contracts
+python test_contract.py
+```
+
+## LocalNet Testing
+
+LocalNet is Algorand's local blockchain for development:
+
+1. **Start LocalNet**: `algokit localnet start`
+2. **Deploy Contract**: `python smart_contracts/localnet_test.py`  
+3. **Test Functions**: Use React Native app or direct contract calls
+
+LocalNet provides:
+- Instant block times
+- Pre-funded accounts
+- Full Algorand node locally
+- Reset on restart
+
+## Contract API
+
+### Core Methods
+
+- `opt_in_relay()` - Join relay network
+- `process_mesh_relay(data, destination, hops)` - Process relay transaction
+- `withdraw_relay_fees()` - Withdraw earned fees
+- `create_token(name, symbol, supply)` - Create OFFNET token
+
+### State
+
+**Global State**
+- `mesh_fee` - Relay fee in microAlgos
+- `relay_count` - Active relay nodes
+- `token_asset_id` - Created token ID
+
+**Local State**
+- `reputation_score` - Node reputation (0-100)
+- `relay_balance` - Accumulated fees
+- `is_active_relay` - Active status
+
+## Architecture
+
+### Smart Contract
+- PyTeal-based Algorand smart contract
+- Inner transaction support
+- Reputation system
+- Fee distribution
+
+### Mobile App
+- React Native with Expo
+- Pera Wallet integration
+- Bluetooth mesh networking
+- Offline transaction storage
+
+### Mesh Protocol
+- Bluetooth LE for device discovery
+- Transaction fragment broadcasting
+- Multi-hop routing with TTL
+- Economic incentives for relaying
+
+## Configuration
+
+Update `constants/algorand.ts`:
+
+```typescript
+export const ALGORAND_CONFIG = {
+  NETWORK: "TestNet", // or "MainNet"
+  MESH_RELAY_APP_ID: 0, // Set after deployment
+  OFFNET_TOKEN_ID: 0,   // Set after token creation
+};
+```
+
+## Testing
+
+### Contract Tests
+```bash
+cd smart_contracts
+python test_compilation.py  # Test compilation
+python localnet_test.py     # Test on LocalNet
+```
+
+### Mobile App Tests
 ```bash
 npm test
-```
-
-### Building for Production
-```bash
-npm run build
-```
-
-### Linting
-```bash
 npm run lint
 ```
 
-## Network Protocol
-
-### Transaction Format
-Transactions follow the Algorand transaction specification with additional metadata for mesh routing:
-- Sender and receiver addresses
-- Transaction amount and asset ID
-- Mesh routing headers
-- Digital signatures
-- Timestamp and validity period
-
-### Mesh Routing
-The mesh protocol implements a flooding algorithm with TTL (time-to-live) counters:
-- Transactions broadcast to all connected peers
-- Duplicate detection prevents loops
-- Hop counting limits network traversal
-- Priority queuing for time-sensitive transactions
-
-### Consensus Mechanism
-Offnet uses a hybrid consensus approach:
-- Local transaction validation
-- Peer verification for conflict resolution
-- Eventual consistency across network partitions
-- Incentive alignment through relay rewards
-
-## Security Considerations
-
-### Cryptographic Security
-- Ed25519 digital signatures for transaction authentication
-- ECDH key exchange for secure communication channels
-- AES-256 encryption for sensitive data storage
-- Secure random number generation for key material
-
-### Network Security
-- Message authentication codes (MAC) for packet integrity
-- Replay attack prevention through nonce mechanisms
-- Rate limiting to prevent spam attacks
-- Sybil attack resistance through proof-of-work
-
-### Privacy Protection
-- Transaction amount obfuscation techniques
-- Identity unlinkability across transactions
-- Metadata minimization in network protocols
-- Optional transaction mixing capabilities
-
 ## Contributing
 
-### Development Workflow
-1. Fork the repository
-2. Create a feature branch
-3. Implement changes with tests
-4. Submit a pull request
-5. Code review and approval process
-
-### Code Standards
-- TypeScript for type safety
-- ESLint configuration enforcement
-- Automated testing requirements
-- Documentation for public APIs
-
-### Issue Reporting
-- Use GitHub Issues for bug reports
-- Include reproduction steps and environment details
-- Security issues should be reported privately
-- Feature requests welcome with use case descriptions
-
-## Roadmap
-
-### Phase 1: Core Infrastructure
-- Basic mesh networking implementation
-- Transaction validation and storage
-- Mobile application framework
-- Smart contract deployment
-
-### Phase 2: Advanced Features
-- Smart voucher implementation
-- Decentralized identity system
-- Network incentive mechanisms
-- Performance optimizations
-
-### Phase 3: Network Expansion
-- Cross-platform compatibility
-- Advanced routing algorithms
-- Integration with existing Web3 infrastructure
-- Merchant and business tools
+1. Fork repository
+2. Create feature branch
+3. Test changes locally
+4. Submit pull request
 
 ## License
 
-This project is licensed under the MIT License. See the LICENSE file for details.
-
-## Research and Documentation
-
-### Academic References
-- Bluetooth mesh networking specifications
-- Offline consensus algorithm research
-- Digital currency security analysis
-- Peer-to-peer network topology studies
-
-### Technical Documentation
-- API reference documentation
-- Protocol specification documents
-- Security audit reports
-- Performance benchmarking results
-
-## Community
-
-### Communication Channels
-- GitHub Discussions for general questions
-- Technical discussions in project issues
-- Development coordination through project boards
-- Regular community calls for major decisions
-
-### Governance
-- Community-driven development process
-- Technical steering committee oversight
-- Transparent decision-making procedures
-- Open source contribution guidelines
+MIT License
